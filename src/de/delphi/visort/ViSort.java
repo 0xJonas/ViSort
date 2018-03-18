@@ -75,7 +75,9 @@ public class ViSort extends Application{
 	
 	private long time;
 	
-	private int delay=1;
+	private double delay=3.0;
+	
+	private double delayAcc=0;
 	
 	private volatile boolean paused=false,nextStep=false;
 	
@@ -105,6 +107,10 @@ public class ViSort extends Application{
 		algorithmComboBox.getSelectionModel().select(0);
 		visualizationComboBox.getSelectionModel().select(0);
 		arrayComboBox.getSelectionModel().select(0);
+		
+		delaySlider.valueProperty().addListener((observable,oldVal,newVal)->{
+			delay=Math.pow(10,newVal.doubleValue());
+		});
 	}
 	
 	@FXML
@@ -124,13 +130,18 @@ public class ViSort extends Application{
 		};
 		timer.start();
 		
+		delayAcc=0.0;
 		algo.addObserver((Observable o,Object arg)->{
 			try{
 				long timeTaken=System.currentTimeMillis()-time;
-				if(timeTaken<delay){
-					Thread.sleep(delay-timeTaken);
+				delayAcc+=delay;
+				if(delayAcc>=delay){
+					if(timeTaken<delayAcc){
+						Thread.sleep((long) delayAcc-timeTaken);
+					}
+					delayAcc-=(int) delayAcc;
+					time=System.currentTimeMillis();
 				}
-				time=System.currentTimeMillis();
 			}catch(InterruptedException e){
 				e.printStackTrace();
 			}
